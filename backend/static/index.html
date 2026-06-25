@@ -1162,6 +1162,10 @@ tbody tr:last-child td { border-bottom: none; }
   border: none;
   padding: 0;
 }
+.showcase-section .grid {
+  grid-template-rows: repeat(2, auto);
+  overflow: hidden;
+}
 @media (max-width: 1024px) {
   .showcase-banner-section { grid-template-columns: 1fr; }
   .showcase-features { grid-template-columns: 1fr; }
@@ -2445,7 +2449,7 @@ tbody tr:last-child td { border-bottom: none; }
       window.showcaseSetQuery = (section, q) => { state[section].query = q; renderSection(section); };
       window.showcaseSetTab = (section, tab) => { state[section].tab = tab; setActiveTab(`${section}Tabs`, tab); renderSection(section); };
 
-      const SHOWCASE_LIMIT = 12;
+      const SHOWCASE_LIMIT = 8;
       const renderSectionGrid = (section, filtered) => {
         const gridId = `${section}Grid`;
         const container = document.getElementById(gridId);
@@ -2458,16 +2462,11 @@ tbody tr:last-child td { border-bottom: none; }
           const items = filtered.slice(0, SHOWCASE_LIMIT);
           container.innerHTML = items.length ? `<div class="grid">${items.map(e => resourceCard(e, `navigate('event-detail',{id:${e.id}})`, { hideFooter: true })).join('')}</div>${moreLink('events', '查看更多活动')}` : '<div class="empty">暂无活动</div>';
         } else if (section === 'agents') {
-          const agentsFiltered = filtered.filter(i => i.type === 'agent').slice(0, SHOWCASE_LIMIT);
-          const botsFiltered = filtered.filter(i => i.type === 'bot').slice(0, SHOWCASE_LIMIT);
-          container.innerHTML = `
-            <div class="section-title" style="margin:4px 0 12px;font-size:15px">${ICONS.sparkles}官方智能体</div>
-            <div class="grid">${agentsFiltered.map(a => resourceCard(a, `window.open('${(a.target_url || '').replace(/'/g, "\\'")}', '_blank')`, { hideFooter: true })).join('') || '<div class="empty">暂无官方智能体</div>'}</div>
-            ${filtered.filter(i => i.type === 'agent').length > SHOWCASE_LIMIT ? `<div style="text-align:center;margin-top:12px"><a class="showcase-section-more" onclick="navigate('agents')">查看更多官方智能体 ${ICONS.chevronRight}</a></div>` : ''}
-            <div class="section-title" style="margin:20px 0 12px;font-size:15px">${ICONS.bot}公开机器人</div>
-            <div class="grid">${botsFiltered.map(b => resourceCard(b, `navigate('bot',{id:${b.id}})`, { hideFooter: true })).join('') || '<div class="empty">暂无公开机器人</div>'}</div>
-            ${filtered.filter(i => i.type === 'bot').length > SHOWCASE_LIMIT ? `<div style="text-align:center;margin-top:12px"><a class="showcase-section-more" onclick="navigate('agents')">查看更多公开机器人 ${ICONS.chevronRight}</a></div>` : ''}
-          `;
+          const items = filtered.slice(0, SHOWCASE_LIMIT);
+          container.innerHTML = items.length ? `<div class="grid">${items.map(i => {
+            if (i.type === 'agent') return resourceCard(i, `window.open('${(i.target_url || '').replace(/'/g, "\\'")}', '_blank')`, { hideFooter: true });
+            return resourceCard(i, `navigate('bot',{id:${i.id}})`, { hideFooter: true });
+          }).join('')}</div>${moreLink('agents', '查看更多智能体')}` : '<div class="empty">暂无智能体</div>';
         } else if (section === 'kbs') {
           const items = filtered.slice(0, SHOWCASE_LIMIT);
           container.innerHTML = items.length ? `<div class="grid">${items.map(k => resourceCard(k, `navigate('kb',{id:${k.id}})`, { hideFooter: true })).join('')}</div>${moreLink('kbs', '查看更多知识库')}` : '<div class="empty">暂无可见知识库</div>';
@@ -2480,10 +2479,10 @@ tbody tr:last-child td { border-bottom: none; }
       };
 
       sectionsEl.innerHTML = `
-        ${renderShowcaseSection({ id: 'news', title: '新闻动态', icon: ICONS.newspaper, moreRoute: 'news', tabs: CATEGORY_TABS.news })}
-        ${renderShowcaseSection({ id: 'events', title: '活动与竞赛', icon: ICONS.sparkles, moreRoute: 'events', tabs: CATEGORY_TABS.events })}
         ${renderShowcaseSection({ id: 'agents', title: '智能体广场', icon: ICONS.bot, moreRoute: 'agents', tabs: CATEGORY_TABS.agents })}
         ${renderShowcaseSection({ id: 'kbs', title: '知识库广场', icon: ICONS.bookOpen, moreRoute: 'kbs', tabs: CATEGORY_TABS.kbs })}
+        ${renderShowcaseSection({ id: 'events', title: '活动与竞赛', icon: ICONS.sparkles, moreRoute: 'events', tabs: CATEGORY_TABS.events })}
+        ${renderShowcaseSection({ id: 'news', title: '新闻动态', icon: ICONS.newspaper, moreRoute: 'news', tabs: CATEGORY_TABS.news })}
       `;
 
       ['news', 'events', 'agents', 'kbs'].forEach(s => renderSection(s));

@@ -2738,7 +2738,7 @@ tbody tr:last-child td { border-bottom: none; }
           <span class="doc-item-name">${d.file_type === 'online' ? '<span class="online-doc-tag">在线文档</span>' : ''}${escapeHtml(d.name)}</span>
           <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
             <span class="tag ${d.status === 'ready' ? 'tag-success' : 'tag-danger'}">${d.status}</span>
-            ${canDeleteDoc(d) ? `<button class="btn btn-sm btn-danger" onclick="deleteDoc(event, ${d.id})">删除</button>` : ''}
+            ${(canDeleteDoc(d) && route.name === 'kb-builder') ? `<button class="btn btn-sm btn-danger" onclick="deleteDoc(event, ${d.id})">删除</button>` : ''}
           </div>
         </div>
       `).join('') || '<div class="empty">暂无文档</div>';

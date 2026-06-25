@@ -550,6 +550,19 @@ tbody tr:last-child td { border-bottom: none; }
 .doc-item:hover, .doc-item.active { background: var(--primary-light); }
 .doc-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-right: 10px; font-weight: 500; }
 .preview-box { padding: 28px; }
+.online-editor { display: flex; flex-direction: column; height: 100%; }
+.online-editor-header { display: flex; align-items: center; gap: 12px; padding: 14px 18px; border-bottom: 1px solid var(--border-subtle); }
+.online-editor-header input { flex: 1; font-size: 15px; font-weight: 600; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; }
+.online-editor-toolbar { display: flex; align-items: center; gap: 6px; padding: 10px 18px; border-bottom: 1px solid var(--border-subtle); background: #fafafa; flex-wrap: wrap; }
+.online-editor-toolbar button { background: #fff; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; font-size: 13px; cursor: pointer; color: var(--text-secondary); }
+.online-editor-toolbar button:hover { border-color: var(--primary); color: var(--primary); }
+.online-editor-body { flex: 1; padding: 18px; overflow-y: auto; outline: none; line-height: 1.7; font-size: 14px; }
+.online-editor-body:empty:before { content: '在此输入正文...'; color: var(--text-muted); }
+.online-editor-body p { margin: 0 0 10px; }
+.online-editor-body ul, .online-editor-body ol { padding-left: 24px; margin: 0 0 10px; }
+.online-editor-body h1 { font-size: 20px; margin: 0 0 10px; }
+.online-editor-body h2 { font-size: 17px; margin: 0 0 10px; }
+.online-doc-tag { font-size: 11px; padding: 2px 6px; border-radius: 4px; background: var(--primary-light); color: var(--primary-dark); margin-right: 8px; }
 
 .news-full { background: var(--card-bg); border-radius: var(--radius-xl); border: none; padding: 48px; min-height: calc(100vh - var(--top-nav-height) - 120px); box-shadow: var(--shadow); }
 .news-full h1 { margin-top: 0; font-size: 32px; letter-spacing: -0.5px; }
@@ -2646,7 +2659,7 @@ tbody tr:last-child td { border-bottom: none; }
               ${kbId ? `<button class="btn btn-danger" onclick="deleteKb(${kbId})">删除知识库</button>` : ''}
             </div>
             <hr style="margin:20px 0;border:0;border-top:1px solid var(--border)">
-            <div class="doc-list-header">文档管理 <button class="btn btn-sm" onclick="triggerKbUpload()">+ 上传</button><input type="file" id="kbUploadInput" style="display:none" onchange="doUploadInBuilder(this)"></div>
+            <div class="doc-list-header">文档管理 <div><button class="btn btn-sm" onclick="openOnlineDocEditor()">+ 添加</button><button class="btn btn-sm" onclick="triggerKbUpload()" style="margin-left:8px">+ 上传</button><input type="file" id="kbUploadInput" style="display:none" onchange="doUploadInBuilder(this)"></div></div>
             <div class="doc-list" id="docList"></div>
           </div>
           <div class="builder-right" id="previewPanel"></div>
@@ -2706,7 +2719,7 @@ tbody tr:last-child td { border-bottom: none; }
       };
       el.innerHTML = docs.map(d => `
         <div class="doc-item" data-id="${d.id}" data-type="${d.file_type || ''}" onclick="selectDoc(${d.id})">
-          <span class="doc-item-name">${escapeHtml(d.name)}</span>
+          <span class="doc-item-name">${d.file_type === 'online' ? '<span class="online-doc-tag">在线文档</span>' : ''}${escapeHtml(d.name)}</span>
           <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
             <span class="tag ${d.status === 'ready' ? 'tag-success' : 'tag-danger'}">${d.status}</span>
             ${canDeleteDoc(d) ? `<button class="btn btn-sm btn-danger" onclick="deleteDoc(event, ${d.id})">删除</button>` : ''}
@@ -2720,6 +2733,10 @@ tbody tr:last-child td { border-bottom: none; }
       const item = document.querySelector(`.doc-item[data-id="${docId}"]`);
       if (item) item.classList.add('active');
       const fileType = (item?.dataset.type || '').toLowerCase();
+      if (fileType === 'online') {
+        await openOnlineDocEditor(docId);
+        return;
+      }
       const panel = document.getElementById('previewPanel');
       if (fileType === 'pdf') {
         const res = await fetch(`${API}/api/v1/documents/${docId}/download`, { headers: { 'Authorization': `Bearer ${token}` } });
@@ -2741,6 +2758,90 @@ tbody tr:last-child td { border-bottom: none; }
         renderKbBuilder(document.getElementById('content'));
       } else {
         renderKbDetail(document.getElementById('content'));
+      }
+    }
+
+    async function openOnlineDocEditor(docId = 0) {
+      const isNew = docId === 0;
+      if (!isNew) {
+        document.querySelectorAll('.doc-item').forEach(i => i.classList.remove('active'));
+        const item = document.querySelector(`.doc-item[data-id="${docId}"]`);
+        if (item) item.classList.add('active');
+      }
+      let name = '';
+      let content = '';
+      if (!isNew) {
+        try {
+          const data = await request(`/api/v1/documents/${docId}/content`);
+          name = data.name || '';
+          content = data.content || '';
+        } catch (e) {
+          name = '';
+          content = '';
+        }
+      }
+      const panel = document.getElementById('previewPanel');
+      panel.innerHTML = `
+        <div class="online-editor">
+          <div class="online-editor-header">
+            <input id="onlineDocName" value="${escapeHtml(name)}" placeholder="请输入在线文档标题">
+            <button class="btn btn-sm" onclick="saveOnlineDoc(${docId})">${isNew ? '保存' : '保存修改'}</button>
+          </div>
+          <div class="online-editor-toolbar">
+            <button type="button" onclick="formatDoc('bold')" title="加粗"><b>B</b></button>
+            <button type="button" onclick="formatDoc('italic')" title="斜体"><i>I</i></button>
+            <button type="button" onclick="formatDoc('underline')" title="下划线"><u>U</u></button>
+            <button type="button" onclick="formatDoc('insertUnorderedList')" title="无序列表">• 列表</button>
+            <button type="button" onclick="formatDoc('insertOrderedList')" title="有序列表">1. 列表</button>
+            <button type="button" onclick="formatDoc('formatBlock', 'H1')" title="标题1">H1</button>
+            <button type="button" onclick="formatDoc('formatBlock', 'H2')" title="标题2">H2</button>
+            <button type="button" onclick="formatDoc('formatBlock', 'P')" title="正文">P</button>
+          </div>
+          <div id="onlineDocEditor" class="online-editor-body" contenteditable="true">${content}</div>
+        </div>
+      `;
+    }
+
+    function formatDoc(command, value = null) {
+      document.execCommand(command, false, value);
+      document.getElementById('onlineDocEditor')?.focus();
+    }
+
+    async function saveOnlineDoc(docId) {
+      const name = document.getElementById('onlineDocName').value.trim();
+      const content = document.getElementById('onlineDocEditor').innerHTML;
+      if (!name) {
+        alert('请输入文档标题');
+        return;
+      }
+      const kbId = window.kbDetail?.id;
+      if (!kbId) {
+        alert('请先保存知识库');
+        return;
+      }
+      try {
+        let res;
+        if (!docId) {
+          res = await request(`/api/v1/kb/${kbId}/online-documents`, {
+            method: 'POST',
+            body: { name, content, folder_path: '/' }
+          });
+          alert('在线文档已创建');
+          await renderKbBuilder(document.getElementById('content'));
+          if (res && res.id) {
+            await openOnlineDocEditor(res.id);
+          }
+        } else {
+          res = await request(`/api/v1/documents/${docId}/content`, {
+            method: 'PUT',
+            body: { name, content }
+          });
+          alert('在线文档已保存');
+          await renderKbBuilder(document.getElementById('content'));
+          await openOnlineDocEditor(docId);
+        }
+      } catch (e) {
+        alert('保存失败：' + (e.message || '未知错误'));
       }
     }
 

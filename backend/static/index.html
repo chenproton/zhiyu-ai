@@ -871,7 +871,7 @@ tbody tr:last-child td { border-bottom: none; }
 .showcase-page { padding: 24px 28px 48px; }
 .showcase-banner-section {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 2fr 1fr;
   gap: 24px;
   margin-bottom: 32px;
 }
@@ -1120,86 +1120,6 @@ tbody tr:last-child td { border-bottom: none; }
   width: 24px;
   border-radius: 4px;
 }
-.showcase-middle-section {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 24px;
-  margin-bottom: 32px;
-}
-.showcase-yika-card {
-  background: var(--card-bg);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  min-height: 220px;
-}
-.showcase-yika-header {
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-  background: linear-gradient(90deg, rgba(79,70,229,0.10), rgba(79,70,229,0.04));
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.showcase-yika-avatar {
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  background: var(--primary);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.showcase-yika-avatar svg { width: 18px; height: 18px; }
-.showcase-yika-title { font-size: 14px; font-weight: 700; color: var(--text); margin: 0; }
-.showcase-yika-subtitle { font-size: 11px; color: var(--text-muted); margin: 2px 0 0; }
-.showcase-yika-body {
-  flex: 1;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-.showcase-yika-prompts { display: flex; flex-wrap: wrap; gap: 8px; }
-.showcase-yika-chip {
-  padding: 5px 12px;
-  border-radius: 999px;
-  background: #f1f5f9;
-  color: var(--text-secondary);
-  font-size: 12px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: all .15s;
-}
-.showcase-yika-chip:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary-light); }
-.showcase-yika-input-row { display: flex; gap: 8px; margin-top: auto; }
-.showcase-yika-input {
-  flex: 1;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  font-size: 13px;
-  outline: none;
-}
-.showcase-yika-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-.showcase-yika-send {
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  border: none;
-  background: var(--primary);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-.showcase-yika-send svg { width: 16px; height: 16px; }
 .showcase-section {
   margin-bottom: 40px;
   background: var(--card-bg);
@@ -1241,7 +1161,6 @@ tbody tr:last-child td { border-bottom: none; }
 }
 @media (max-width: 1024px) {
   .showcase-banner-section { grid-template-columns: 1fr; }
-  .showcase-middle-section { grid-template-columns: 1fr; }
   .showcase-features { grid-template-columns: 1fr; }
 }
 @media (max-width: 640px) {
@@ -2397,16 +2316,6 @@ tbody tr:last-child td { border-bottom: none; }
       el.innerHTML = `
         <div class="showcase-page">
           <div class="showcase-banner-section">
-            <div class="showcase-banner-main">
-              <h1 class="showcase-banner-title">YIKnow:<p></p>You Ask I Know · 你问，我懂</h1>
-              <p class="showcase-banner-desc">融合场景化数智教学模式，为职业教育提供智能化教学辅助、岗位能力评估、个性化学习路径规划等全方位AI服务，助力培养适应产业需求的高素质技术技能人才。</p>
-              <div class="showcase-banner-actions">
-                <a class="showcase-banner-btn white" onclick="navigate('agents')">立即体验</a>
-                <a class="showcase-banner-btn outline" onclick="YKA.togglePanel()">探索YIKnow</a>
-              </div>
-            </div>
-          </div>
-          <div class="showcase-middle-section">
             <div class="showcase-logo-carousel">
               <div class="showcase-logo-carousel-title">精选场景</div>
               <div class="showcase-logo-slider" id="showcaseLogoSlider">
@@ -2420,22 +2329,12 @@ tbody tr:last-child td { border-bottom: none; }
                 ${partners.map((_, i) => `<div class="showcase-logo-dot ${i === 0 ? 'active' : ''}" data-index="${i}" onclick="window.showcaseGoToLogo(${i})"></div>`).join('')}
               </div>
             </div>
-            <div class="showcase-yika-card">
-              <div class="showcase-yika-header">
-                <div class="showcase-yika-avatar">${ICONS.sparkles}</div>
-                <div>
-                  <h3 class="showcase-yika-title">YI KNOW</h3>
-                  <p class="showcase-yika-subtitle">职业教育场景化教学智能助理</p>
-                </div>
-              </div>
-              <div class="showcase-yika-body">
-                <div class="showcase-yika-prompts">
-                  ${(window.YKA?.PROMPT_TAGS || []).map(t => `<span class="showcase-yika-chip" onclick="YKA.ask('${escapeHtml(t.value)}')">${escapeHtml(t.label)}</span>`).join('')}
-                </div>
-                <div class="showcase-yika-input-row">
-                  <input class="showcase-yika-input" type="text" placeholder="输入问题，例如：金融专业岗位标准" onkeydown="if(event.key==='Enter')YKA.ask(this.value)">
-                  <button class="showcase-yika-send" onclick="YKA.ask(this.previousElementSibling.value)">${ICONS.send}</button>
-                </div>
+            <div class="showcase-banner-main">
+              <h1 class="showcase-banner-title">YIKnow:<p></p>You Ask I Know · 你问，我懂</h1>
+              <p class="showcase-banner-desc">融合场景化数智教学模式，为职业教育提供智能化教学辅助、岗位能力评估、个性化学习路径规划等全方位AI服务，助力培养适应产业需求的高素质技术技能人才。</p>
+              <div class="showcase-banner-actions">
+                <a class="showcase-banner-btn white" onclick="navigate('agents')">立即体验</a>
+                <a class="showcase-banner-btn outline" onclick="YKA.togglePanel()">探索YIKnow</a>
               </div>
             </div>
           </div>

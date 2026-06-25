@@ -475,7 +475,6 @@
   }
 
   window.YKA = {
-    PROMPT_TAGS,
     toggleExpand(id) {
       const next = new Set(state.expandedIds);
       if (next.has(id)) next.delete(id);
@@ -520,16 +519,6 @@
     },
     togglePanel() {
       handleOpenChange(!state.open);
-    },
-    ask(value) {
-      const text = String(value || '').trim();
-      if (!text) return;
-      handleOpenChange(true);
-      state.input = text;
-      if (els.input) els.input.value = text;
-      if (els.send) els.send.disabled = false;
-      if (state.messages.length === 0 && !state.typing) renderContent();
-      handleSend();
     },
   };
 

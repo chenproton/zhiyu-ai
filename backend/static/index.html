@@ -2749,11 +2749,16 @@ tbody tr:last-child td { border-bottom: none; }
       const item = document.querySelector(`.doc-item[data-id="${docId}"]`);
       if (item) item.classList.add('active');
       const fileType = (item?.dataset.type || '').toLowerCase();
+      const panel = document.getElementById('previewPanel');
       if (fileType === 'online') {
-        await openOnlineDocEditor(docId);
+        if (route.name === 'kb-builder') {
+          await openOnlineDocEditor(docId);
+        } else {
+          const html = await request(`/api/v1/documents/${docId}/preview`);
+          panel.innerHTML = `<div class="preview-box">${html}</div>`;
+        }
         return;
       }
-      const panel = document.getElementById('previewPanel');
       if (fileType === 'pdf') {
         const res = await fetch(`${API}/api/v1/documents/${docId}/download`, { headers: { 'Authorization': `Bearer ${token}` } });
         if (!res.ok) { panel.innerHTML = '<div class="preview-box">PDF 加载失败</div>'; return; }

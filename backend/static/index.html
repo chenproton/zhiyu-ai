@@ -460,6 +460,9 @@ tbody tr:last-child td { border-bottom: none; }
 .kb-detail-ai .ai-history { display: none; flex: 1; overflow-y: auto; padding: 14px; border-bottom: 1px solid var(--border-subtle); margin-bottom: 12px; }
 .kb-detail-ai.expanded .ai-history { display: block; }
 .kb-detail-ai .ai-input-row { display: flex; gap: 12px; width: 100%; }
+.ai-collapse-btn { position: absolute; top: 8px; right: 12px; display: none; background: transparent; border: none; color: var(--text-secondary); font-size: 20px; line-height: 1; cursor: pointer; padding: 4px; z-index: 11; }
+.ai-collapse-btn:hover { color: var(--primary); }
+.kb-detail-ai.expanded .ai-collapse-btn { display: block; }
 
 /* 创建/编辑页 */
 .builder { display: flex; gap: 16px; height: calc(100vh - var(--top-nav-height) - 100px); }
@@ -2592,31 +2595,45 @@ tbody tr:last-child td { border-bottom: none; }
       const kb = await request(`/api/v1/kb/${kbId}`);
       window.kbDetail = kb;
       setBreadcrumb(`<a onclick="navigate('kbs')">知识库广场</a> / ${escapeHtml(kb.name)}`);
+      const isCompetitionKb = kbId === 13;
+      const mainColumn = isCompetitionKb
+        ? `<div style="flex:1;display:flex;flex-direction:column;min-width:360px;overflow:hidden"><div class="kb-detail-right" id="previewPanel"></div></div>`
+        : `<div style="flex:1;display:flex;flex-direction:column;gap:16px;min-width:360px;overflow:hidden">
+            <div class="kb-detail-right" id="previewPanel"></div>
+            <div class="card" style="margin:0;padding:18px;max-height:260px;overflow:auto">
+              <div id="kbInteractionPanel"></div>
+            </div>
+          </div>`;
+      const aiPanel = isCompetitionKb
+        ? `<div class="kb-detail-ai" id="kbAiPanel">
+            <button class="ai-collapse-btn" onclick="expandKbAi(false)" title="折叠">⌄</button>
+            <div class="ai-history" id="kbAiHistory"></div>
+            <div class="ai-input-row">
+              <input id="kbAiInput" placeholder="针对该知识库提问..." onkeydown="if(event.key==='Enter') kbAiSubmit()">
+              <button class="btn" onclick="kbAiSubmit()">发送</button>
+            </div>
+          </div>`
+        : `<div class="kb-detail-ai" id="kbAiPanel">
+            <div class="ai-history" id="kbAiHistory"></div>
+            <div class="ai-input-row">
+              <input id="kbAiInput" placeholder="针对该知识库提问..." onkeydown="if(event.key==='Enter') kbAiSubmit()">
+              <button class="btn" onclick="kbAiSubmit()">发送</button>
+            </div>
+          </div>`;
       el.innerHTML = `
         <div class="kb-detail">
           <div class="kb-detail-left">
             <div class="doc-list-header">文档列表</div>
             <div class="doc-list" id="docList"></div>
           </div>
-          <div style="flex:1;display:flex;flex-direction:column;gap:16px;min-width:360px;overflow:hidden">
-            <div class="kb-detail-right" id="previewPanel"></div>
-            <div class="card" style="margin:0;padding:18px;max-height:260px;overflow:auto">
-              <div id="kbInteractionPanel"></div>
-            </div>
-          </div>
-          <div class="kb-detail-ai" id="kbAiPanel">
-            <div class="ai-history" id="kbAiHistory"></div>
-            <div class="ai-input-row">
-              <input id="kbAiInput" placeholder="针对该知识库提问..." onkeydown="if(event.key==='Enter') kbAiSubmit()">
-              <button class="btn" onclick="kbAiSubmit()">发送</button>
-            </div>
-          </div>
+          ${mainColumn}
+          ${aiPanel}
         </div>
       `;
       renderDocList(kb.documents || []);
       if (kb.documents && kb.documents.length) selectDoc(kb.documents[0].id);
       document.getElementById('kbAiInput').addEventListener('focus', () => expandKbAi(true));
-      renderInteractionPanel('kb', kbId, 'kbInteractionPanel');
+      if (!isCompetitionKb) renderInteractionPanel('kb', kbId, 'kbInteractionPanel');
     }
 
     function expandKbAi(expanded) {

@@ -28,6 +28,87 @@
     purple: { bg: '#faf5ff', text: '#9333ea', border: '#e9d5ff' },
   };
 
+  const COLOR_KEYS = Object.keys(COLORS);
+  const API_BASE = (typeof API !== 'undefined' ? API : '') || '';
+
+  function getToken() {
+    if (typeof token !== 'undefined' && token) return token;
+    try {
+      return localStorage.getItem('token') || '';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  async function apiRequest(path) {
+    const headers = {};
+    const t = getToken();
+    if (t) headers['Authorization'] = `Bearer ${t}`;
+    const res = await fetch(`${API_BASE}${path}`, { headers });
+    if (!res.ok) throw new Error(`${res.status}`);
+    return res.json();
+  }
+
+  function mapKb(kb, index) {
+    const tags = [];
+    if (kb.org_name) tags.push(kb.org_name);
+    if (kb.status === 'published') tags.push('已发布');
+    else if (kb.status) tags.push(kb.status);
+    return {
+      id: `kb-${kb.id}`,
+      category: 'knowledge',
+      title: kb.name || '未命名知识库',
+      desc: kb.description || '暂无描述',
+      tags,
+      icon: 'book',
+      color: COLOR_KEYS[index % COLOR_KEYS.length],
+      originalId: kb.id,
+      originalType: 'kb',
+    };
+  }
+
+  function mapBot(bot, index) {
+    const tags = [];
+    if (bot.is_official) tags.push('官方');
+    else if (bot.share_type === 'public') tags.push('公开');
+    else if (bot.share_type) tags.push(bot.share_type);
+    if (bot.status === 'active') tags.push('已上架');
+    else if (bot.status) tags.push(bot.status);
+    return {
+      id: `bot-${bot.id}`,
+      category: 'agent',
+      title: bot.name || '未命名智能体',
+      desc: bot.description || '暂无描述',
+      tags,
+      icon: 'bot',
+      color: COLOR_KEYS[(index + 4) % COLOR_KEYS.length],
+      originalId: bot.id,
+      originalType: 'bot',
+    };
+  }
+
+  async function loadResources() {
+    const t = getToken();
+    if (!t) {
+      return { resources: RESOURCES, source: 'mock' };
+    }
+    try {
+      const [kbs, bots] = await Promise.all([
+        apiRequest('/api/v1/kb').catch(() => []),
+        apiRequest('/api/v1/bots/public').catch(() => []),
+      ]);
+      const platforms = RESOURCES.filter((r) => r.category === 'platform');
+      const kbResources = (Array.isArray(kbs) ? kbs : []).map(mapKb);
+      const botResources = (Array.isArray(bots) ? bots : []).map(mapBot);
+      return {
+        resources: [...kbResources, ...botResources, ...platforms],
+        source: 'real',
+      };
+    } catch (e) {
+      return { resources: RESOURCES, source: 'mock' };
+    }
+  }
+
   const RESOURCES = [
     { id: 'finance-kb', category: 'knowledge', title: '金融专业知识库', desc: '覆盖银行、证券、保险等金融岗位核心知识与案例。', tags: ['金融', '专业'], icon: 'book', color: 'amber' },
     { id: 'logistics-kb', category: 'knowledge', title: '物流专业知识库', desc: '仓储、运输、供应链管理等物流领域知识沉淀。', tags: ['物流', '专业'], icon: 'book', color: 'emerald' },
@@ -98,6 +179,10 @@
     messages: [],
     input: '',
     typing: false,
+    resources: RESOURCES,
+    loading: true,
+    error: null,
+    dataSource: 'mock',
   };
   let els = {};
 
@@ -117,13 +202,26 @@
 
   function getFilteredResources() {
     const q = state.input.trim().toLowerCase();
-    return RESOURCES.filter((r) => {
+    return state.resources.filter((r) => {
       const matchesCategory = state.activeTab === 'all' || r.category === state.activeTab;
       const matchesQuery = !q ||
         r.title.toLowerCase().includes(q) ||
         r.desc.toLowerCase().includes(q) ||
         (r.tags || []).some((t) => t.toLowerCase().includes(q));
       return matchesCategory && matchesQuery;
+    });
+  }
+
+  function findResourcesByIds(ids) {
+    return ids
+      .map((id) => state.resources.find((r) => r.id === id))
+      .filter(Boolean);
+  }
+
+  function findResourcesByKeywords(keywords) {
+    return state.resources.filter((r) => {
+      const text = `${r.title} ${r.desc} ${(r.tags || []).join(' ')}`.toLowerCase();
+      return keywords.some((kw) => text.includes(kw));
     });
   }
 
@@ -143,20 +241,28 @@
       reply = '已为你唤起 AI 智能体，点击即可使用 AI 辅助创建岗位。';
       quickActions = QUICK_ACTIONS.filter((a) => a.id === 'ai-create-position');
     } else if (q.includes('网络安全工程师') || q.includes('岗位')) {
-      reply = '推荐你进入【职业岗位学习平台】的网络安全工程师岗位页面。该岗位需要掌握网络协议分析、安全设备配置、渗透测试与日志审计等能力，涉及 NISP、CISP 等证书。建议先学习《网络协议与安全基础》，再完成对应实训场景。';
-      recommendations = RESOURCES.filter((r) => ['career-platform', 'finance-kb', 'position-agent'].includes(r.id));
+      reply = '推荐你进入【职业岗位学习平台】查看相关岗位。你可以从知识库中学习岗位标准，或使用智能体辅助创建岗位能力模型。';
+      recommendations = findResourcesByIds(['career-platform'])
+        .concat(findResourcesByKeywords(['岗位', '职业', '能力']))
+        .slice(0, 3);
     } else if (q.includes('实训场景') || q.includes('信息安全')) {
-      reply = '信息安全专业已发布 12 个实践场景，包括 Web 渗透测试、内网安全加固、日志审计分析等。每个场景已标注关联岗位、能力点和任务数，你可以直接进入【实践场景学习平台】查看详情。';
-      recommendations = RESOURCES.filter((r) => ['scene-platform', 'cnc-kb', 'scene-agent'].includes(r.id));
+      reply = '已为你找到实践场景相关资源，包括教学平台、实训知识库和场景创建智能体，你可以直接点击查看详情。';
+      recommendations = findResourcesByIds(['scene-platform'])
+        .concat(findResourcesByKeywords(['场景', '实训', '实践']))
+        .slice(0, 3);
     } else if (q.includes('岗位认证') || q.includes('能力')) {
-      reply = '根据你的能力画像对比网络安全工程师岗位认证标准：已达成网络基础、系统配置；待提升渗透测试、安全报告撰写。已为你推荐对应测评任务和 3 个练习资源。';
-      recommendations = RESOURCES.filter((r) => ['eval-platform', 'qa-robot', 'custom-robot'].includes(r.id));
+      reply = '已为你推荐能力测评与认证相关资源，点击卡片即可进入对应平台或智能体。';
+      recommendations = findResourcesByIds(['eval-platform'])
+        .concat(findResourcesByKeywords(['测评', '认证', '能力', '答疑']))
+        .slice(0, 3);
     } else if (q.includes('校企合作') || q.includes('合作单位')) {
-      reply = '学校现有 8 家深度合作企业，包括金融科技、智能制造、现代服务等领域。你可以在【产业联盟与品牌运营平台】查看合作类型、重点项目成果及专家资源。';
-      recommendations = RESOURCES.filter((r) => ['brand-platform', 'hotel-kb', 'logistics-kb'].includes(r.id));
+      reply = '你可以在【产业联盟与品牌运营平台】查看校企合作单位、重点项目成果及专家资源。';
+      recommendations = findResourcesByIds(['brand-platform'])
+        .concat(findResourcesByKeywords(['校企', '合作', '产业', '品牌']))
+        .slice(0, 3);
     } else {
       reply = '我帮你找到了一些相关资源，你可以点击卡片快速查看。如需更精准的推荐，可以补充专业、年级或目标岗位。';
-      recommendations = RESOURCES.filter((r) => {
+      recommendations = state.resources.filter((r) => {
         return (
           r.title.toLowerCase().includes(q) ||
           r.desc.toLowerCase().includes(q) ||
@@ -164,7 +270,7 @@
         );
       }).slice(0, 4);
       if (recommendations.length === 0) {
-        recommendations = RESOURCES.slice(0, 3);
+        recommendations = state.resources.slice(0, 3);
       }
     }
     return { reply, recommendations, quickActions };
@@ -172,14 +278,26 @@
 
   function renderResourceItem(r) {
     const isExpandable = r.category === 'platform';
+    const isClickable = r.originalType === 'kb' || r.originalType === 'bot';
     const expanded = state.expandedIds.has(r.id);
     const c = COLORS[r.color] || COLORS.indigo;
     const tagsHtml = (r.tags || []).map((t) => `<span class="yka-tag">${escapeHtml(t)}</span>`).join('');
     const expandHtml = isExpandable && expanded ? renderModules(r) : '';
-    const onclick = isExpandable ? `onclick="YKA.toggleExpand('${r.id}')"` : '';
+    let onclick = '';
+    let cls = '';
+    if (isExpandable) {
+      cls = 'expandable';
+      onclick = `onclick="YKA.toggleExpand('${r.id}')"`;
+    } else if (isClickable) {
+      cls = 'clickable';
+      if (r.originalType === 'kb') onclick = `onclick="YKA.openKnowledgeBase(${r.originalId})"`;
+      else if (r.originalType === 'bot') onclick = `onclick="YKA.openBot(${r.originalId})"`;
+    } else {
+      cls = 'non-expand';
+    }
     return `
-      <div class="yka-resource ${isExpandable ? 'expandable' : 'non-expand'}" ${onclick}>
-        <button class="yka-resource-btn" type="button" ${isExpandable ? '' : 'disabled'}>
+      <div class="yka-resource ${cls}" ${onclick}>
+        <button class="yka-resource-btn" type="button" ${isExpandable || isClickable ? '' : 'disabled'}>
           <div class="yka-resource-main">
             <div class="yka-icon-box" style="background:${c.bg};color:${c.text};border-color:${c.border}">
               ${getIcon(r.icon)}
@@ -284,6 +402,10 @@
 
   function renderContent() {
     if (!els.content) return;
+    if (state.loading) {
+      els.content.innerHTML = `<div class="yka-loading"><div class="yka-loading-spinner">${getIcon('loader2')}</div><p>正在加载资源…</p></div>`;
+      return;
+    }
     const isChatMode = state.messages.length > 0 || state.typing;
     if (isChatMode) {
       els.content.innerHTML = `
@@ -467,10 +589,15 @@
     updateSend();
   }
 
-  function init() {
+  async function init() {
     if (document.getElementById('yka-fab')) return;
     createFab();
     createPanel();
+    renderContent();
+    const { resources, source } = await loadResources();
+    state.resources = resources;
+    state.dataSource = source;
+    state.loading = false;
     renderContent();
   }
 
@@ -489,11 +616,17 @@
       if (state.messages.length === 0 && !state.typing) renderContent();
     },
     openResource(id) {
-      const r = RESOURCES.find((x) => x.id === id);
+      const r = state.resources.find((x) => x.id === id);
       if (!r) return;
       if (r.category === 'platform' && r.platformId) {
         state.activeTab = 'platform';
         state.expandedIds = new Set([id]);
+      } else if (r.originalType === 'kb') {
+        this.openKnowledgeBase(r.originalId);
+        return;
+      } else if (r.originalType === 'bot') {
+        this.openBot(r.originalId);
+        return;
       } else {
         state.activeTab = r.category;
       }
@@ -502,6 +635,24 @@
       updateTabs();
       updatePrompts();
       renderContent();
+    },
+    openKnowledgeBase(id) {
+      if (typeof navigate === 'function') {
+        navigate('kb', { id });
+        this.closePanel();
+      } else {
+        window.location.hash = `#/kb/${id}`;
+        this.closePanel();
+      }
+    },
+    openBot(id) {
+      if (typeof navigate === 'function') {
+        navigate('bot', { id });
+        this.closePanel();
+      } else {
+        window.location.hash = `#/bot/${id}`;
+        this.closePanel();
+      }
     },
     closeChat() {
       state.messages = [];

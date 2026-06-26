@@ -1169,6 +1169,53 @@ tbody tr:last-child td { border-bottom: none; }
   grid-template-rows: repeat(2, auto);
   overflow: hidden;
 }
+.showcase-official-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 20px;
+  margin-bottom: 8px;
+}
+.showcase-official-card {
+  position: relative;
+  background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  cursor: pointer;
+  transition: transform .2s, box-shadow .2s;
+  overflow: hidden;
+}
+.showcase-official-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+.showcase-official-card .official-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  flex-shrink: 0;
+}
+.showcase-official-card .official-icon img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+.showcase-official-card .official-info { flex: 1; }
+.showcase-official-card .official-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+.showcase-official-card .official-desc { font-size: 14px; line-height: 1.5; opacity: 0.9; }
+.showcase-official-card .official-badge {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  font-size: 12px;
+  background: rgba(255,255,255,0.2);
+  padding: 3px 10px;
+  border-radius: 999px;
+}
 @media (max-width: 1024px) {
   .showcase-banner-section { grid-template-columns: 1fr; }
   .showcase-features { grid-template-columns: 1fr; }
@@ -2447,7 +2494,8 @@ tbody tr:last-child td { border-bottom: none; }
         kbs: { tab: '全部', query: '' },
       };
 
-      const sectionItems = { news: newsItems, events, agents: [...agents, ...bots], kbs };
+      const officialAgents = agents;
+      const sectionItems = { news: newsItems, events, agents: bots, kbs };
 
       window.showcaseSetQuery = (section, q) => { state[section].query = q; renderSection(section); };
       window.showcaseSetTab = (section, tab) => { state[section].tab = tab; setActiveTab(`${section}Tabs`, tab); renderSection(section); };
@@ -2481,7 +2529,28 @@ tbody tr:last-child td { border-bottom: none; }
         renderSectionGrid(section, filtered);
       };
 
+      const officialAgentsHtml = officialAgents.length ? `
+        <div class="showcase-section">
+          <div class="showcase-section-header">
+            <div class="showcase-section-title">${ICONS.bot}官方智能体</div>
+          </div>
+          <div class="showcase-official-grid">
+            ${officialAgents.map(a => `
+              <div class="showcase-official-card" onclick="window.open('${(a.target_url || '').replace(/'/g, "\\'")}', '_blank')">
+                <div class="official-badge">官方</div>
+                <div class="official-icon">${a.avatar ? `<img src="${a.avatar}" alt="">` : ICONS.bot}</div>
+                <div class="official-info">
+                  <div class="official-title">${escapeHtml(a.name)}</div>
+                  <div class="official-desc">${escapeHtml(a.description)}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      ` : '';
+
       sectionsEl.innerHTML = `
+        ${officialAgentsHtml}
         ${renderShowcaseSection({ id: 'agents', title: '智能体广场', icon: ICONS.bot, moreRoute: 'agents', tabs: CATEGORY_TABS.agents })}
         ${renderShowcaseSection({ id: 'kbs', title: '知识库广场', icon: ICONS.bookOpen, moreRoute: 'kbs', tabs: CATEGORY_TABS.kbs })}
         ${renderShowcaseSection({ id: 'events', title: '活动与竞赛', icon: ICONS.sparkles, moreRoute: 'events', tabs: CATEGORY_TABS.events })}

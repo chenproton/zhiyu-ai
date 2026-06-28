@@ -1811,6 +1811,9 @@ tbody tr:last-child td { border-bottom: none; }
         pages.login(app);
         return;
       }
+      if (route.name === 'showcase' && !token) {
+        await autoLogin();
+      }
       const isShowcase = route.name === 'showcase';
       app.innerHTML = `
         ${renderTopNav()}
@@ -2010,6 +2013,18 @@ tbody tr:last-child td { border-bottom: none; }
         navigate('agents');
       } catch (e) {
         alert('登录失败：' + e.message);
+      }
+    }
+
+    async function autoLogin() {
+      try {
+        const data = await request('/api/v1/auth/login', { method: 'POST', body: { username: 'admin', password: '123456' } });
+        token = data.access_token;
+        currentUser = data.user;
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(currentUser));
+      } catch (e) {
+        console.error('自动登录失败', e);
       }
     }
 

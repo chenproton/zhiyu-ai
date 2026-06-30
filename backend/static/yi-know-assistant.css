@@ -1,32 +1,113 @@
-/* YI KNOW 教学智能助理 */
-.yka-fab {
+/* YI KNOW 教学智能助理 — Robot button */
+.yka-robot-container {
   position: fixed;
   bottom: 40px;
   right: 24px;
   z-index: 100;
   display: flex;
-  align-items: center;
-  gap: 8px;
-  border-radius: 999px;
-  padding: 12px 16px 12px 20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
-  border: none;
-  cursor: pointer;
+  align-items: flex-end;
+  gap: 12px;
+}
+.yka-speech-bubble {
+  position: relative;
+  background: #fff;
+  border-radius: 16px;
+  padding: 14px 20px;
+  box-shadow: 0 16px 40px rgba(90,120,180,.22);
+  border: 1px solid rgba(30,115,232,.15);
+  max-width: 220px;
+  animation: yka-rb-pop 0.6s cubic-bezier(.2,1.3,.4,1) both;
+  animation-delay: .5s;
+}
+.yka-wave-emoji {
+  font-size: 18px;
+  display: inline-block;
+  animation: yka-rb-wave 1.6s ease-in-out infinite;
+  transform-origin: 70% 70%;
+}
+.yka-hi-text {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a73e8;
+  margin-left: 6px;
+}
+.yka-bubble-text {
+  margin: 6px 0 0;
   font-size: 14px;
-  font-weight: 500;
-  transition: transform .2s, background .2s, color .2s;
+  color: #2a3650;
+  line-height: 1.5;
 }
-.yka-fab.open {
-  background: #0f172a;
+.yka-brand-name {
+  color: #1a73e8;
+  font-weight: 800;
+}
+.yka-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #ffce3d;
+  border-radius: 50%;
+  margin: 0 2px;
+  vertical-align: middle;
+  box-shadow: 0 0 8px #ffce3d;
+}
+.yka-bubble-tail {
+  position: absolute;
+  right: -14px;
+  top: 56px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 10px 0 10px 16px;
+  border-color: transparent transparent transparent #fff;
+  filter: drop-shadow(3px 2px 3px rgba(90,120,180,.08));
+}
+.yka-robot-btn {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  transition: transform .2s;
+  flex-shrink: 0;
+  filter: drop-shadow(0 8px 16px rgba(120,140,180,.35));
+  position: relative;
+}
+.yka-robot-btn:hover { transform: scale(1.1); }
+.yka-robot-btn:active { transform: scale(0.95); }
+.yka-robot-svg-wrap {
+  transition: opacity .3s, transform .3s;
+  width: 100%;
+  height: 100%;
+}
+.yka-robot-container.open .yka-robot-svg-wrap {
+  opacity: 0;
+  transform: scale(0.5);
+}
+.yka-robot-container.closed .yka-robot-svg-wrap {
+  opacity: 1;
+  transform: scale(1);
+}
+.yka-robot-close-icon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity .3s;
+}
+.yka-robot-container.open .yka-robot-close-icon {
+  opacity: 1;
+}
+.yka-robot-close-icon svg {
+  width: 32px;
+  height: 32px;
   color: #fff;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.3));
 }
-.yka-fab.closed {
-  background: var(--primary);
-  color: #fff;
-}
-.yka-fab:hover { transform: scale(1.05); }
-.yka-fab svg { width: 20px; height: 20px; }
-.yka-fab .yka-chevron { width: 16px; height: 16px; }
 
 .yka-panel {
   position: fixed;
@@ -439,3 +520,114 @@
 .yka-rec-item:hover { background: #e2e8f0; }
 .yka-rec-item svg { width: 12px; height: 12px; }
 .yka-rec-title { font-size: 11px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ─── YI KNOW Robot animations ─── */
+.yka-robot-all {
+  animation: yka-rb-float 4s ease-in-out infinite;
+  transform-origin: 190px 360px;
+}
+@keyframes yka-rb-float {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-8px) rotate(-1deg); }
+  50% { transform: translateY(-12px) rotate(0deg); }
+  75% { transform: translateY(-8px) rotate(1deg); }
+}
+.yka-head-area {
+  animation: yka-rb-headSway 5s ease-in-out infinite;
+  transform-origin: 190px 170px;
+}
+@keyframes yka-rb-headSway {
+  0%,100% { transform: rotate(0deg); }
+  30% { transform: rotate(2deg); }
+  60% { transform: rotate(-2deg); }
+}
+.yka-body-breath {
+  animation: yka-rb-breath 3.5s ease-in-out infinite;
+  transform-origin: 190px 290px;
+}
+@keyframes yka-rb-breath {
+  0%,100% { transform: scaleY(1) scaleX(1); }
+  50% { transform: scaleY(1.02) scaleX(1.01); }
+}
+.yka-eyes {
+  animation: yka-rb-blink 4s infinite;
+  transform-origin: center 103px;
+}
+@keyframes yka-rb-blink {
+  0%,46%,52%,96%,100% { transform: scaleY(1); }
+  48%,50% { transform: scaleY(.08); }
+  88%,92% { transform: scaleY(.08); }
+  90% { transform: scaleY(1); }
+}
+.yka-pupils {
+  animation: yka-rb-lookAround 6s ease-in-out infinite;
+}
+@keyframes yka-rb-lookAround {
+  0%,100% { transform: translateX(0); }
+  20% { transform: translateX(5px); }
+  40% { transform: translateX(5px); }
+  55% { transform: translateX(-5px); }
+  75% { transform: translateX(-5px); }
+}
+.yka-eye-shine { animation: yka-rb-shine 2.5s ease-in-out infinite; }
+@keyframes yka-rb-shine { 0%,100% { opacity: .85; } 50% { opacity: 1; } }
+.yka-mouth {
+  animation: yka-rb-talk 1.2s ease-in-out infinite;
+  transform-origin: 190px 132px;
+}
+@keyframes yka-rb-talk {
+  0%,100% { transform: scaleY(1); }
+  25% { transform: scaleY(.5); }
+  50% { transform: scaleY(1.3); }
+  75% { transform: scaleY(.7); }
+}
+.yka-arm-left {
+  animation: yka-rb-armL 3.2s ease-in-out infinite;
+  transform-origin: 105px 205px;
+}
+@keyframes yka-rb-armL {
+  0%,100% { transform: rotate(0deg); }
+  50% { transform: rotate(8deg); }
+}
+.yka-arm-right {
+  animation: yka-rb-armR 2s ease-in-out infinite;
+  transform-origin: 285px 205px;
+}
+@keyframes yka-rb-armR {
+  0%,100% { transform: rotate(0deg); }
+  25% { transform: rotate(-14deg); }
+  50% { transform: rotate(-4deg); }
+  75% { transform: rotate(-16deg); }
+}
+.yka-ear-light { animation: yka-rb-earBlink 1.8s ease-in-out infinite; }
+@keyframes yka-rb-earBlink {
+  0%,100% { opacity: .4; }
+  50% { opacity: 1; }
+}
+.yka-ear-light.yka-ear-r { animation-delay: .9s; }
+.yka-antenna-light {
+  animation: yka-rb-antenna 2s ease-in-out infinite;
+  transform-origin: 190px 18px;
+}
+@keyframes yka-rb-antenna {
+  0%,100% { transform: scale(1); opacity: .7; }
+  50% { transform: scale(1.4); opacity: 1; }
+}
+.yka-scanline { animation: yka-rb-scan 3s linear infinite; }
+@keyframes yka-rb-scan {
+  0% { transform: translateY(-50px); opacity: 0; }
+  20% { opacity: .5; }
+  80% { opacity: .5; }
+  100% { transform: translateY(60px); opacity: 0; }
+}
+
+@keyframes yka-rb-pop {
+  0% { opacity: 0; transform: scale(.7) translateX(-20px); }
+  100% { opacity: 1; transform: scale(1) translateX(0); }
+}
+@keyframes yka-rb-wave {
+  0%,60%,100% { transform: rotate(0); }
+  15% { transform: rotate(18deg); }
+  30% { transform: rotate(-8deg); }
+  45% { transform: rotate(14deg); }
+}

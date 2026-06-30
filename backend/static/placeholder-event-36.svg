@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="400" viewBox="0 0 800 400">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:hsl(331,65%,85%)"/>
+      <stop offset="50%" style="stop-color:hsl(21,65%,80%)"/>
+      <stop offset="100%" style="stop-color:hsl(71,65%,75%)"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="400" fill="url(#g)"/>
+  <g opacity="0.25">
+    <circle cx="160.0" cy="120.0" r="100.0" fill="#fff"/>
+    <circle cx="640.0" cy="280.0" r="140.0" fill="#fff"/>
+  </g>
+  <text x="400.0" y="206.0" font-family="Inter,system-ui,sans-serif" font-size="32.0" font-weight="600" fill="rgba(15,23,42,0.45)" text-anchor="middle">event36</text>
+</svg>

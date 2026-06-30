@@ -130,6 +130,23 @@
     { id: 'ai-create-position', label: '我要 AI 帮我建岗位', icon: 'sparkles', href: 'http://111.170.170.202:5000/', color: 'indigo' },
   ];
 
+  const ROBOT_SVG = '<svg viewBox="0 0 380 380" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;display:block">' +
+    '<defs>' +
+    '<linearGradient id="yka-rb-helmet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f1f5fb"/><stop offset="0.5" stop-color="#dfe6f0"/><stop offset="1" stop-color="#c4cedd"/></linearGradient>' +
+    '<radialGradient id="yka-rb-visor" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#1c4258"/><stop offset="0.55" stop-color="#123243"/><stop offset="1" stop-color="#0a2230"/></radialGradient>' +
+    '<linearGradient id="yka-rb-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef2f9"/><stop offset="0.6" stop-color="#dde4ef"/><stop offset="1" stop-color="#bfc8d8"/></linearGradient>' +
+    '<linearGradient id="yka-rb-arm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e6ecf5"/><stop offset="1" stop-color="#c0cad9"/></linearGradient>' +
+    '<linearGradient id="yka-rb-ear" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#d4dce8"/><stop offset="1" stop-color="#b3bdcd"/></linearGradient>' +
+    '<radialGradient id="yka-rb-eyeGlow" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#bdf6ff"/><stop offset="0.5" stop-color="#5fe1f0"/><stop offset="1" stop-color="#2bb6cf"/></radialGradient>' +
+    '<filter id="yka-rb-soft" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="3"/></filter>' +
+    '<clipPath id="yka-rb-visorClip"><path d="M90 105 C90 73 128 58 190 58 C252 58 290 73 290 105 C290 137 288 147 274 156 C254 168 222 174 190 174 C158 174 126 168 106 156 C92 147 90 137 90 105 Z"/></clipPath>' +
+    '</defs>' +
+    '<g class="yka-robot-all">' +
+    '<g class="yka-arm-left"><path d="M95 200 C58 215 38 270 32 305 C28 332 40 352 60 350 C80 348 90 322 95 296 C100 270 108 235 118 220 Z" fill="url(#yka-rb-arm)"/></g>' +
+    '<g class="yka-arm-right"><path d="M285 200 C322 215 342 270 348 305 C352 332 340 352 320 350 C300 348 290 322 285 296 C280 270 272 235 262 220 Z" fill="url(#yka-rb-arm)"/></g>' +
+    '<g class="yka-body-breath"><path d="M105 235 C105 200 140 180 190 180 C240 180 275 200 275 235 C275 305 240 355 190 355 C140 355 105 305 105 235 Z" fill="url(#yka-rb-body)"/><path d="M150 178 C150 165 168 160 190 160 C212 160 230 165 230 178 L230 196 C230 210 212 216 190 216 C168 216 150 210 150 196 Z" fill="#c3ccdb"/><circle cx="190" cy="300" r="8" fill="#5fe1f0" class="yka-eye-shine"/><circle cx="190" cy="300" r="8" fill="none" stroke="#bdf6ff" stroke-width="1.5" opacity=".5"/></g>' +
+    '<g class="yka-head-area"><path d="M160 22 C160 10 175 6 190 6 C205 6 220 10 220 22 L220 34 L160 34 Z" fill="url(#yka-rb-helmet)"/><line x1="190" y1="6" x2="190" y2="-8" stroke="#aab5c6" stroke-width="3"/><circle cx="190" cy="-10" r="6" fill="#5fe1f0" class="yka-antenna-light"/><rect x="48" y="92" width="34" height="62" rx="16" fill="url(#yka-rb-ear)"/><rect x="56" y="100" width="14" height="46" rx="7" fill="#9aa6b8" opacity=".5"/><circle cx="63" cy="123" r="5" fill="#5fe1f0" class="yka-ear-light"/><rect x="298" y="92" width="34" height="62" rx="16" fill="url(#yka-rb-ear)"/><rect x="310" y="100" width="14" height="46" rx="7" fill="#9aa6b8" opacity=".5"/><circle cx="317" cy="123" r="5" fill="#5fe1f0" class="yka-ear-light yka-ear-r"/><path d="M70 110 C70 58 120 32 190 32 C260 32 310 58 310 110 C310 138 305 160 295 168 C300 145 290 80 190 80 C90 80 80 145 85 168 C75 160 70 138 70 110 Z" fill="url(#yka-rb-helmet)"/><path d="M82 105 C82 68 125 50 190 50 C255 50 298 68 298 105 C298 142 298 152 282 162 C260 176 225 182 190 182 C155 182 120 176 98 162 C82 152 82 142 82 105 Z" fill="#aeb9ca"/><path d="M90 105 C90 73 128 58 190 58 C252 58 290 73 290 105 C290 137 288 147 274 156 C254 168 222 174 190 174 C158 174 126 168 106 156 C92 147 90 137 90 105 Z" fill="url(#yka-rb-visor)"/><g clip-path="url(#yka-rb-visorClip)"><path d="M110 72 C140 62 240 62 270 72 C245 66 135 66 110 72 Z" fill="#3a6378" opacity=".6"/><ellipse cx="135" cy="78" rx="28" ry="9" fill="#fff" opacity=".12"/><rect class="yka-scanline" x="90" y="100" width="200" height="3" fill="#5fe1f0" opacity=".4"/></g><circle cx="143" cy="103" r="26" fill="#1d4a5e" opacity=".55"/><circle cx="237" cy="103" r="26" fill="#1d4a5e" opacity=".55"/><g class="yka-eyes"><g class="yka-pupils"><circle cx="143" cy="103" r="18" fill="url(#yka-rb-eyeGlow)"/><path d="M127 100 Q143 88 159 100 Q143 96 127 100 Z" fill="#eafdff" class="yka-eye-shine"/><circle cx="143" cy="103" r="18" fill="none" stroke="#bdf6ff" stroke-width="1.5" opacity=".5"/><circle cx="237" cy="103" r="18" fill="url(#yka-rb-eyeGlow)"/><path d="M221 100 Q237 88 253 100 Q237 96 221 100 Z" fill="#eafdff" class="yka-eye-shine"/><circle cx="237" cy="103" r="18" fill="none" stroke="#bdf6ff" stroke-width="1.5" opacity=".5"/></g></g><path class="yka-mouth" d="M178 132 C178 142 184 148 190 148 C196 148 202 142 202 132 Z" fill="url(#yka-rb-eyeGlow)"/></g></g></svg>';
+
   const PROMPT_TAGS = [
     { label: '建岗位', value: '我要建岗位' },
     { label: '建场景', value: '我要建场景' },
@@ -431,9 +448,9 @@
   }
 
   function updateFab() {
-    if (!els.fab) return;
-    els.fab.className = `yka-fab ${state.open ? 'open' : 'closed'}`;
-    els.fab.innerHTML = `${getIcon('sparkles')}<span>YI KNOW 教学智能助理</span>${state.open ? getIcon('x') : getIcon('chevronRight')}`;
+    if (!els.fabContainer) return;
+    els.fabContainer.className = 'yka-robot-container ' + (state.open ? 'open' : 'closed');
+    els.fabBubble.style.display = state.open ? 'none' : 'block';
   }
 
   function updateTabs() {
@@ -510,13 +527,29 @@
   }
 
   function createFab() {
+    const container = document.createElement('div');
+    container.id = 'yka-robot-container';
+    container.className = 'yka-robot-container closed';
+
+    const bubble = document.createElement('div');
+    bubble.id = 'yka-speech-bubble';
+    bubble.className = 'yka-speech-bubble';
+    bubble.innerHTML = '<span class="yka-wave-emoji">👋</span><span class="yka-hi-text">Hi～</span><p class="yka-bubble-text">我是 <span class="yka-brand-name">YI<span class="yka-dot"></span>Know</span><br>你的专属智能助理</p><div class="yka-bubble-tail"></div>';
+
     const btn = document.createElement('button');
-    btn.id = 'yka-fab';
-    btn.className = 'yka-fab closed';
+    btn.id = 'yka-robot-btn';
+    btn.className = 'yka-robot-btn';
     btn.setAttribute('aria-label', 'YI KNOW 教学智能助理');
+    btn.innerHTML = '<div class="yka-robot-svg-wrap">' + ROBOT_SVG + '</div><div class="yka-robot-close-icon">' + getIcon('x') + '</div>';
     btn.onclick = () => handleOpenChange(!state.open);
-    document.body.appendChild(btn);
-    els.fab = btn;
+
+    container.appendChild(bubble);
+    container.appendChild(btn);
+    document.body.appendChild(container);
+
+    els.fabContainer = container;
+    els.fabBubble = bubble;
+    els.fabBtn = btn;
     updateFab();
   }
 
@@ -590,7 +623,7 @@
   }
 
   async function init() {
-    if (document.getElementById('yka-fab')) return;
+    if (document.getElementById('yka-robot-container')) return;
     createFab();
     createPanel();
     renderContent();

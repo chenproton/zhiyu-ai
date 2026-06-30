@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+.env
+backend/.env
+*.log
+node_modules/
+.deploy-local/
+.deploy/
+uploads/
+backend/uploads/
+backend/app.pid
+backend/uvicorn.log
+backend/app.log
+venv/
+*.png
+*.jpg

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>学校 AI 服务平台</title>
+  <title>AI 智能服务平台</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1238,6 +1238,24 @@ tbody tr:last-child td { border-bottom: none; }
     let token = localStorage.getItem('token') || '';
     let currentUser = JSON.parse(localStorage.getItem('user') || '{}');
     let route = { name: 'agents', params: {} };
+    let demoLoginPromise = null;
+
+    async function ensureDemoLogin() {
+      if (token) return;
+      if (demoLoginPromise) return demoLoginPromise;
+      demoLoginPromise = (async () => {
+        try {
+          const data = await request('/api/v1/auth/login', { method: 'POST', body: { username: 'admin', password: '123456' } });
+          token = data.access_token;
+          currentUser = data.user;
+          localStorage.setItem('token', token);
+          localStorage.setItem('user', JSON.stringify(currentUser));
+        } catch (e) {
+          console.error('演示自动登录失败', e);
+        }
+      })();
+      return demoLoginPromise;
+    }
 
     const CATEGORY_TABS = {
       agents: ['全部', '热门', '最新', '创作', 'AI绘画', '角色', '娱乐', '职场', '教育', '生活'],
@@ -1753,9 +1771,9 @@ tbody tr:last-child td { border-bottom: none; }
 
     function renderTopNav() {
       const items = [
-        { id: 'portal', label: '门户首页', href: 'http://demo2.zhiyu.com.cn:3001/portal', icon: ICONS.home },
-        { id: 'workspace', label: '我的服务台', href: 'http://demo2.zhiyu.com.cn:3001/portal/workspace', icon: ICONS.briefcase },
-        { id: 'apps', label: '应用服务中心', href: 'http://demo2.zhiyu.com.cn:3001/portal/apps', icon: ICONS.grid },
+        { id: 'portal', label: '门户首页', href: 'http://111.170.170.202:3001/portal', icon: ICONS.home },
+        { id: 'workspace', label: '我的服务台', href: 'http://111.170.170.202:3001/portal/workspace', icon: ICONS.briefcase },
+        { id: 'apps', label: '应用服务中心', href: 'http://111.170.170.202:3001/portal/apps', icon: ICONS.grid },
       ].map(item => {
         return `<a class="top-nav-item" href="${item.href}">${item.icon} ${item.label}</a>`;
       }).join('');
@@ -1764,7 +1782,7 @@ tbody tr:last-child td { border-bottom: none; }
           <div class="top-nav-left">
             <div class="top-nav-brand" onclick="navigate('agents')">
               <div class="brand-icon">${ICONS.settings}</div>
-              <span class="brand-title">学校 AI 服务平台</span>
+              <span class="brand-title">AI 智能服务平台</span>
             </div>
             <nav class="top-nav-menu">${items}</nav>
           </div>
@@ -1811,9 +1829,7 @@ tbody tr:last-child td { border-bottom: none; }
         pages.login(app);
         return;
       }
-      if (route.name === 'showcase' && !token) {
-        await autoLogin();
-      }
+      await ensureDemoLogin();
       const isShowcase = route.name === 'showcase';
       app.innerHTML = `
         ${renderTopNav()}
@@ -1991,7 +2007,7 @@ tbody tr:last-child td { border-bottom: none; }
     async function renderLogin(el) {
       el.innerHTML = `
         <div class="login-box">
-          <div class="login-title">学校 AI 服务平台</div>
+          <div class="login-title">AI 智能服务平台</div>
           <div style="color:var(--text-secondary);font-size:13px;margin-bottom:12px">演示环境，默认使用 admin 账号登录...</div>
           <input id="loginUser" placeholder="用户名" value="admin">
           <input id="loginPass" type="password" placeholder="密码" value="123456">
@@ -2013,18 +2029,6 @@ tbody tr:last-child td { border-bottom: none; }
         navigate('agents');
       } catch (e) {
         alert('登录失败：' + e.message);
-      }
-    }
-
-    async function autoLogin() {
-      try {
-        const data = await request('/api/v1/auth/login', { method: 'POST', body: { username: 'admin', password: '123456' } });
-        token = data.access_token;
-        currentUser = data.user;
-        localStorage.setItem('token', token);
-        localStorage.setItem('user', JSON.stringify(currentUser));
-      } catch (e) {
-        console.error('自动登录失败', e);
       }
     }
 
@@ -4110,11 +4114,14 @@ tbody tr:last-child td { border-bottom: none; }
     }
 
     /* ========== 启动 ========== */
-    window.addEventListener('hashchange', () => { parseRoute(); render(); });
+    window.addEventListener('hashchange', () => { parseRoute(); ensureDemoLogin().then(render); });
     setInterval(() => { if (route.name !== 'login') updateTopNavTime(); }, 60000);
-    parseRoute();
-    if (token || route.name === 'showcase') render();
-    else navigate('login');
+    (async () => {
+      parseRoute();
+      await ensureDemoLogin();
+      if (token || route.name === 'showcase') render();
+      else navigate('login');
+    })();
   </script>
   <script src="/static/yi-know-assistant.js" defer></script>
 </body>

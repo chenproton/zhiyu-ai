@@ -49,6 +49,29 @@
     return res.json();
   }
 
+  async function demoLogin() {
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: 'admin', password: '123456' }),
+      });
+      if (!res.ok) return '';
+      const data = await res.json();
+      if (data.access_token) {
+        try {
+          localStorage.setItem('token', data.access_token);
+          if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
+        } catch (e) {}
+        if (typeof token !== 'undefined') token = data.access_token;
+        return data.access_token;
+      }
+    } catch (e) {
+      console.error('YI KNOW 自动登录失败', e);
+    }
+    return '';
+  }
+
   function mapKb(kb, index) {
     const tags = [];
     if (kb.org_name) tags.push(kb.org_name);
@@ -88,7 +111,16 @@
   }
 
   async function loadResources() {
-    const t = getToken();
+    let t = getToken();
+    if (!t) {
+      if (typeof ensureDemoLogin !== 'undefined') {
+        await ensureDemoLogin();
+      }
+      t = getToken();
+    }
+    if (!t) {
+      t = await demoLogin();
+    }
     if (!t) {
       return { resources: RESOURCES, source: 'mock' };
     }
